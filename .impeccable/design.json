@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-20T00:00:00Z",
+  "title": "Design System: Revidle Singularity Path Planner",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Instrument Blue", "canonical": "oklch(58% 0.19 262)", "tonalRamp": ["oklch(20% 0.08 262)", "oklch(30% 0.12 262)", "oklch(40% 0.15 262)", "oklch(50% 0.18 262)", "oklch(58% 0.19 262)", "oklch(68% 0.15 262)", "oklch(80% 0.09 262)", "oklch(92% 0.03 262)"] },
+      "bg": { "role": "neutral", "displayName": "Cool Gray Canvas", "canonical": "oklch(97% 0.003 250)", "tonalRamp": ["oklch(12% 0.005 250)", "oklch(20% 0.005 250)", "oklch(35% 0.005 250)", "oklch(55% 0.005 250)", "oklch(75% 0.004 250)", "oklch(88% 0.004 250)", "oklch(94% 0.003 250)", "oklch(97% 0.003 250)"] },
+      "panel-bg": { "role": "neutral", "displayName": "Panel White", "canonical": "oklch(100% 0 0)", "tonalRamp": ["oklch(15% 0.005 250)", "oklch(22% 0.005 250)", "oklch(35% 0.004 250)", "oklch(55% 0.003 250)", "oklch(75% 0.002 250)", "oklch(90% 0.001 250)", "oklch(97% 0.001 250)", "oklch(100% 0 0)"] },
+      "text": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(22% 0.01 260)", "tonalRamp": ["oklch(15% 0.01 260)", "oklch(22% 0.01 260)", "oklch(32% 0.01 260)", "oklch(45% 0.01 260)", "oklch(58% 0.01 260)", "oklch(70% 0.01 260)", "oklch(85% 0.005 260)", "oklch(95% 0.003 260)"] },
+      "muted": { "role": "neutral", "displayName": "Muted Slate", "canonical": "oklch(46% 0.02 258)", "tonalRamp": ["oklch(20% 0.02 258)", "oklch(30% 0.02 258)", "oklch(38% 0.02 258)", "oklch(46% 0.02 258)", "oklch(58% 0.02 258)", "oklch(68% 0.015 258)", "oklch(78% 0.01 258)", "oklch(88% 0.008 258)"] },
+      "border": { "role": "neutral", "displayName": "Hairline Border", "canonical": "oklch(88% 0.006 258)", "tonalRamp": ["oklch(25% 0.006 258)", "oklch(35% 0.006 258)", "oklch(45% 0.006 258)", "oklch(60% 0.006 258)", "oklch(75% 0.006 258)", "oklch(82% 0.006 258)", "oklch(88% 0.006 258)", "oklch(94% 0.004 258)"] },
+      "danger": { "role": "error", "displayName": "Danger Red", "canonical": "oklch(55% 0.19 25)", "tonalRamp": ["oklch(25% 0.12 25)", "oklch(35% 0.15 25)", "oklch(45% 0.18 25)", "oklch(55% 0.19 25)", "oklch(64% 0.18 25)", "oklch(74% 0.14 25)", "oklch(85% 0.08 25)", "oklch(93% 0.03 25)"] },
+      "row-start": { "role": "state", "displayName": "Start Row Wash", "canonical": "oklch(94% 0.02 262)", "tonalRamp": ["oklch(18% 0.05 262)", "oklch(24% 0.06 262)", "oklch(30% 0.06 262)", "oklch(80% 0.03 262)", "oklch(88% 0.025 262)", "oklch(91% 0.022 262)", "oklch(94% 0.02 262)", "oklch(97% 0.01 262)"] },
+      "row-blocked": { "role": "state", "displayName": "Blocked Row Wash", "canonical": "oklch(94% 0.03 25)", "tonalRamp": ["oklch(18% 0.08 25)", "oklch(24% 0.1 25)", "oklch(30% 0.1 25)", "oklch(80% 0.05 25)", "oklch(88% 0.04 25)", "oklch(91% 0.035 25)", "oklch(94% 0.03 25)", "oklch(97% 0.015 25)"] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Page <h1> only, one per page." },
+      "title": { "displayName": "Title", "purpose": "Section <h2> headers (Current stats, Scenarios)." },
+      "label": { "displayName": "Label", "purpose": "Muted <h3> sub-headers within a panel." },
+      "body": { "displayName": "Body", "purpose": "Paragraph copy, subtitles, status messages." },
+      "data": { "displayName": "Data", "purpose": "Form labels, table cells, scenario stats — the highest-traffic size." }
+    },
+    "shadows": [
+      { "name": "ambient-popover", "value": "0 4px 14px rgba(0, 0, 0, 0.35)", "purpose": "Info-icon tooltip only." },
+      { "name": "modal-overlay", "value": "0 12px 40px rgba(0, 0, 0, 0.5)", "purpose": "Scenario-detail modal, above a 0.55-alpha scrim." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "ease", "purpose": "Tooltip opacity/transform transition (0.1s), currently the only motion in the system." }
+    ],
+    "breakpoints": [
+      { "name": "compare-stack", "value": "900px", "purpose": "Compare grid collapses from 2 columns to 1." },
+      { "name": "dense-mobile", "value": "480px", "purpose": "Steps table shrinks font/padding further." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single main action in a panel (Find Optimal Path, Find Push Path, Rush node).",
+      "html": "<button class=\"ds-btn-primary\">Find Optimal Path</button>",
+      "css": ".ds-btn-primary { background: #3b6ff0; color: #ffffff; border: 1px solid #3b6ff0; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; } .ds-btn-primary:hover { border-color: #2c5bd6; } .ds-btn-primary:focus-visible { outline: 2px solid #3b6ff0; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Default button style; most actions in the system are this, not primary.",
+      "html": "<button class=\"ds-btn-secondary\">Start Blank Custom Plan</button>",
+      "css": ".ds-btn-secondary { background: #ffffff; color: #1a1d23; border: 1px solid #d8dce2; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; } .ds-btn-secondary:hover { border-color: #3b6ff0; } .ds-btn-secondary:focus-visible { outline: 2px solid #3b6ff0; outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive actions only (Clear All Plans).",
+      "html": "<button class=\"ds-btn-danger\">Clear All Plans</button>",
+      "css": ".ds-btn-danger { background: #ffffff; color: #d24545; border: 1px solid #d24545; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; } .ds-btn-danger:hover { background: #fdeaea; } .ds-btn-danger:focus-visible { outline: 2px solid #d24545; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ascension:Level Input Pair",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "The system's compound-input pattern for one logical value split into two physical numbers — reuse for the tree redesign's per-node editors.",
+      "html": "<span class=\"ds-node-io\"><input class=\"ds-io-input\" type=\"number\" min=\"0\" placeholder=\"ascension\" /><span class=\"ds-io-sep\">:</span><input class=\"ds-io-input\" type=\"number\" min=\"0\" max=\"9\" placeholder=\"level\" /></span>",
+      "css": ".ds-node-io { display: flex; align-items: center; gap: 4px; } .ds-io-sep { color: #5b6472; font-weight: 600; } .ds-io-input { width: 82px; background: #f6f7f9; border: 1px solid #d8dce2; border-radius: 6px; padding: 6px 8px; color: #1a1d23; font-size: 0.9rem; } .ds-io-input:focus-visible { outline: 2px solid #3b6ff0; outline-offset: 1px; }"
+    },
+    {
+      "name": "Slot Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Scenario slot indicator; the only pill shape in the system.",
+      "html": "<span class=\"ds-badge\">A</span>",
+      "css": ".ds-badge { background: #3b6ff0; color: #ffffff; font-weight: 700; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; }"
+    },
+    {
+      "name": "Auxiliary Panel (dashed)",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Secondary/optional tool panel — dashed border distinguishes it from primary solid-bordered panels (Rush-node panel's existing pattern).",
+      "html": "<div class=\"ds-aux-panel\"><h3 class=\"ds-aux-title\">Rush a tree node</h3><p>Auxiliary tool content.</p></div>",
+      "css": ".ds-aux-panel { padding: 12px 14px; border: 1px dashed #d8dce2; border-radius: 8px; background: #ffffff; } .ds-aux-title { margin: 0 0 10px; font-size: 0.95rem; color: #1a1d23; }"
+    },
+    {
+      "name": "Primary Panel (solid)",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The default panel: stats form, scenario cards. Solid border, no shadow, flat per the Ledger-Line and Flat-By-Default rules.",
+      "html": "<section class=\"ds-panel\"><h2 class=\"ds-panel-title\">Current stats</h2><p>Panel content.</p></section>",
+      "css": ".ds-panel { background: #ffffff; border: 1px solid #d8dce2; border-radius: 10px; padding: 18px 20px; } .ds-panel-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 12px; color: #1a1d23; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Instrument Panel",
+    "overview": "This is a bank of gauges and switches for someone mid-run, not a showroom. Every screen exists to answer one question fast: what do I buy next, how long does this take, which plan wins. The interface borrows its restraint from cockpit instrumentation — dense, legible, low-glare — rather than from product marketing. Precision is the entire aesthetic: numbers align, borders are crisp, nothing moves unless a value changed. It explicitly rejects the SaaS-landing register: no gradient hero sections, no card grids selling a feature, no promotional chrome. The accent blue exists to mark state and action, never to decorate. When the Singularity Tree gets its radial star-shaped view, it earns visual distinctiveness there — the one place a brighter, more atmospheric treatment is allowed — precisely because everywhere else stays instrument-flat, so that one departure reads as \"the game's own shape,\" not stylistic drift.",
+    "keyCharacteristics": [
+      "Flat, border-defined surfaces; shadows are earned, not default.",
+      "One accent color, used sparingly and only for state/action.",
+      "System font stack — no custom display face; legibility over character.",
+      "Dense data tables and inline-editable numeric fields as first-class content.",
+      "Light and dark themes are equally primary, not a dark-mode afterthought."
+    ],
+    "rules": [
+      { "name": "The Ledger-Line Rule", "body": "Depth and grouping come from 1px borders, not shadows or fills. If a new component needs to signal \"this is a distinct group,\" reach for border: 1px solid var(--border) before reaching for a background change or a shadow.", "section": "colors" },
+      { "name": "The One Accent Rule", "body": "Instrument Blue is the only color that means \"active/primary/live.\" Do not introduce a second blue, a green-for-success, or any other \"positive\" hue without a state that red/gray/blue cannot already express.", "section": "colors" },
+      { "name": "The Muted-Header Rule", "body": "Every <h3> is --muted, never --text. A section label should announce a group without competing with the numbers inside it for attention.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. A shadow appears only on a true overlay — never as a resting-state decoration on a card, button, or table row.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use borders (1px solid var(--border)) as the only structural device for grouping.",
+      "Do keep Instrument Blue reserved for state and action.",
+      "Do use the dashed-border variant for auxiliary/optional panels, solid border for primary panels.",
+      "Do cap subtitle/body copy at 65-75ch.",
+      "Do verify 4.5:1 contrast for anything in --muted, especially at the 0.72-0.82rem sizes.",
+      "Do give every animation a prefers-reduced-motion fallback."
+    ],
+    "donts": [
+      "Don't build a SaaS-landing surface: no gradient hero sections, no promotional card grids, no marketing chrome.",
+      "Don't add drop shadows to any resting-state surface.",
+      "Don't introduce a second \"positive/active\" hue alongside Instrument Blue.",
+      "Don't use border-left/border-right as a colored accent stripe.",
+      "Don't let the radial tree's decorative treatment leak into the rest of the UI.",
+      "Don't ship a component with only a default state — every interactive element needs hover and a visible :focus-visible treatment."
+    ]
+  }
+}

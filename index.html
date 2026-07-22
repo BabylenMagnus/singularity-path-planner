@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Revidle Singularity Path Planner</title>
+  <link rel="stylesheet" href="style.css?v=20260722b" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Singularity Path Planner</h1>
+      <p class="subtitle">
+        Enter your current stats, find the fastest path to a target mult, then duplicate it
+        into editable scenarios to compare hand-tweaked plans against the optimizer.
+      </p>
+    </header>
+
+    <div class="backup-bar">
+      <button id="export-backup-btn">Export to file</button>
+      <button id="import-backup-btn">Import from file</button>
+      <input type="file" id="import-backup-input" accept="application/json,.json" hidden />
+      <span class="select-hint">Saves/restores everything below (stats, tree, scenarios) as one .json file — the browser also autosaves as you type, but this survives clearing browser data, a different browser, or moving to another computer.</span>
+    </div>
+
+    <section id="stats-form" class="panel">
+      <h2>Current stats</h2>
+      <div class="grid">
+        <label><span class="label-text">Current Singularity Mult
+          <span class="info-icon" tabindex="0" data-tooltip-key="current-mult">i</span>
+        </span>
+          <input type="number" id="current-mult" step="any" value="" />
+        </label>
+        <label><span class="label-text">Goal mult
+          <span class="info-icon" tabindex="0" data-tooltip-key="goal-mult">i</span>
+        </span>
+          <input type="number" id="goal-mult" step="any" value="" />
+        </label>
+        <label><span class="label-text">Compare: reach goal via path aimed at (blank = off)
+          <span class="info-icon" tabindex="0" data-tooltip-key="compare-goal">i</span>
+        </span>
+          <input type="number" id="compare-goal" step="any" value="" placeholder="e.g. 100" />
+        </label>
+        <label><span class="label-text">Tarot Local Speed
+          <span class="info-icon" tabindex="0" data-tooltip-key="tarot-local-speed">i</span>
+        </span>
+          <input type="number" id="tarot-local-speed" step="any" value="" />
+        </label>
+        <label><span class="label-text">Relic 69 (blank = ignore)
+          <span class="info-icon" tabindex="0" data-tooltip-key="relic69-value">i</span>
+        </span>
+          <span class="input-with-mode">
+            <input type="number" id="relic69-value" step="any" value="" placeholder="e.g. 1.13" />
+            <select id="relic69-mode" title="Interpret the number as the buff value or the node level">
+              <option value="buff" selected>buff</option>
+              <option value="level">level</option>
+            </select>
+          </span>
+        </label>
+        <label><span class="label-text">Total Mult bonuses (e.g. tarot at x36)
+          <span class="info-icon" tabindex="0" data-tooltip-key="mult-bonuses">i</span>
+        </span>
+          <input type="text" id="mult-bonuses" placeholder="36:1.15, 50:1.2" value="" />
+        </label>
+        <label><span class="label-text">Push targets (10^x Atoms, comma-separated)
+          <span class="info-icon" tabindex="0" data-tooltip-key="push-exponent">i</span>
+        </span>
+          <input type="text" id="push-exponent" value="1020" placeholder="e.g. 1020, 1040, 1060" />
+        </label>
+      </div>
+
+      <details class="mult-breakdown" id="mult-breakdown" open>
+        <summary>Total Mult
+          <span class="info-icon" tabindex="0" data-tooltip-key="mult-breakdown">i</span>
+        </summary>
+        <label class="mult-breakdown-total"><span class="label-text">Total Mult (computed from the factors below)
+          <span class="info-icon" tabindex="0" data-tooltip-key="total-mult-shown">i</span>
+        </span>
+          <input type="number" id="total-mult-shown" step="any" value="" readonly />
+        </label>
+        <div class="grid">
+          <label><span class="label-text">Vessel</span>
+            <input type="number" id="mb-vessel" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Plague</span>
+            <input type="number" id="mb-plague" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Relic 38</span>
+            <input type="number" id="mb-relic38" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Relic 67</span>
+            <input type="number" id="mb-relic67" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Atoms (Atom Overflow, e308+)</span>
+            <input type="number" id="mb-atoms" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Sing Count factor (Loop Feeds Loop, #20+)</span>
+            <input type="number" id="mb-sing-count-factor" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Rf Node 125</span>
+            <input type="number" id="mb-rn125" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Singular Zodiacs</span>
+            <input type="number" id="mb-zodiacs" step="any" placeholder="1" />
+          </label>
+          <label><span class="label-text">Sing Mult Factor</span>
+            <input type="number" id="mb-smf" step="any" placeholder="1" />
+          </label>
+          <label class="checkbox-row"><input type="checkbox" id="mb-sword-king" /> Sword King Complete (×1.35)</label>
+          <label class="checkbox-row"><input type="checkbox" id="mb-wand-king" /> Wand King Complete (×1.35)</label>
+          <label class="checkbox-row"><input type="checkbox" id="mb-pentacle-king" /> Pentacle King Complete (×1.35)</label>
+          <label class="checkbox-row"><input type="checkbox" id="mb-cups-king" /> Cups King Complete (×1.35)</label>
+        </div>
+      </details>
+
+      <h3>Tree state
+        <span class="info-icon" tabindex="0" data-tooltip-key="tree-viz">i</span>
+      </h3>
+      <button type="button" id="regenerate-cost-guesses-btn">
+        Regenerate cost estimates
+        <span class="info-icon" tabindex="0" data-tooltip-key="regenerate-cost-guesses">i</span>
+      </button>
+      <div class="tree-viz-wrap">
+        <div class="tree-viz-scroll" id="tree-viz-scroll"></div>
+
+        <div class="tree-editor-panel" id="tree-editor-empty">
+          <p class="empty-hint">Click a star to enter its ascension:level.</p>
+        </div>
+
+        <div class="tree-editor-panel" data-node="1.0" id="tree-editor-1.0" hidden>
+          <h4>STN 1.0</h4>
+          <span class="node-io">
+            <input type="number" id="n1-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="n1-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="n1-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="n1-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="2.0" id="tree-editor-2.0" hidden>
+          <h4>STN 2</h4>
+          <span class="node-io">
+            <input type="number" id="n2-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="n2-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="n2-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="n2-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="3.1" id="tree-editor-3.1" hidden>
+          <h4>STN 3.1</h4>
+          <span class="node-io">
+            <input type="number" id="s31-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s31-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s31-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s31-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="3.2" id="tree-editor-3.2" hidden>
+          <h4>STN 3.2</h4>
+          <span class="node-io">
+            <input type="number" id="s32-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s32-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s32-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s32-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="4.1" id="tree-editor-4.1" hidden>
+          <h4>STN 4.1</h4>
+          <span class="node-io">
+            <input type="number" id="s41-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s41-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s41-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s41-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="4.2" id="tree-editor-4.2" hidden>
+          <h4>STN 4.2</h4>
+          <span class="node-io">
+            <input type="number" id="s42-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s42-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s42-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s42-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="5.1" id="tree-editor-5.1" hidden>
+          <h4>STN 5.1</h4>
+          <span class="node-io">
+            <input type="number" id="s51-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s51-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s51-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s51-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="5.2" id="tree-editor-5.2" hidden>
+          <h4>STN 5.2</h4>
+          <span class="node-io">
+            <input type="number" id="s52-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s52-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s52-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s52-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="6.1" id="tree-editor-6.1" hidden>
+          <h4>STN 6.1</h4>
+          <span class="node-io">
+            <input type="number" id="s61-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s61-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s61-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s61-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="6.2" id="tree-editor-6.2" hidden>
+          <h4>STN 6.2</h4>
+          <span class="node-io">
+            <input type="number" id="s62-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s62-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s62-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s62-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="7.1" id="tree-editor-7.1" hidden>
+          <h4>STN 7.1</h4>
+          <span class="node-io">
+            <input type="number" id="s71-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s71-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s71-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s71-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="7.2" id="tree-editor-7.2" hidden>
+          <h4>STN 7.2</h4>
+          <span class="node-io">
+            <input type="number" id="s72-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s72-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s72-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s72-cost-tag"></span>
+          </label>
+        </div>
+        <div class="tree-editor-panel" data-node="8.0" id="tree-editor-8.0" hidden>
+          <h4>STN 8</h4>
+          <span class="node-io">
+            <input type="number" id="s8-ascension" class="asc" min="0" step="1" placeholder="ascension" />
+            <span class="io-sep">:</span>
+            <input type="number" id="s8-level" class="lvl" min="0" max="9" step="1" placeholder="level" />
+          </span>
+          <label class="node-cost-override"><span class="label-text">Next level cost (10^x atoms)</span>
+            <input type="number" id="s8-cost-shown" step="1" min="0" />
+            <span class="node-cost-tag" id="s8-cost-tag"></span>
+          </label>
+        </div>
+      </div>
+
+      <details class="advanced">
+        <summary>Advanced</summary>
+        <div class="grid">
+          <label><span class="label-text">RN126 level (0–10, e50 penalty)
+            <span class="info-icon" tabindex="0" data-tooltip-key="rn126">i</span>
+          </span>
+            <span class="input-with-mode">
+              <input type="number" id="rn126-level" min="0" max="10" step="1" value="0" />
+              <label class="maxed-check"><input type="checkbox" id="rn126-maxed" /> maxed</label>
+            </span>
+          </label>
+          <label><span class="label-text">RN127 level (0–10, e154 penalty)
+            <span class="info-icon" tabindex="0" data-tooltip-key="rn127">i</span>
+          </span>
+            <span class="input-with-mode">
+              <input type="number" id="rn127-level" min="0" max="10" step="1" value="0" />
+              <label class="maxed-check"><input type="checkbox" id="rn127-maxed" /> maxed</label>
+            </span>
+          </label>
+          <label><span class="label-text">RN128 level (0–10, e10 penalty)
+            <span class="info-icon" tabindex="0" data-tooltip-key="rn128">i</span>
+          </span>
+            <span class="input-with-mode">
+              <input type="number" id="rn128-level" min="0" max="10" step="1" value="0" />
+              <label class="maxed-check"><input type="checkbox" id="rn128-maxed" /> maxed</label>
+            </span>
+          </label>
+          <label><span class="label-text">RN131 level (0–1, Atoms Gain ^x buff)
+            <span class="info-icon" tabindex="0" data-tooltip-key="rn131">i</span>
+          </span>
+            <span class="input-with-mode">
+              <input type="number" id="rn131-level" min="0" max="1" step="1" value="0" />
+              <label class="maxed-check"><input type="checkbox" id="rn131-maxed" /> maxed</label>
+            </span>
+          </label>
+          <label><span class="label-text">Singularity Count for RN 131
+            <span class="info-icon" tabindex="0" data-tooltip-key="singularity-count">i</span>
+          </span>
+            <input type="number" id="singularity-count" step="1" min="0" value="" />
+          </label>
+          <label><span class="label-text">RN136 level (0–10, Tarot Local Speed exponent, optional)
+            <span class="info-icon" tabindex="0" data-tooltip-key="rn136">i</span>
+          </span>
+            <span class="input-with-mode">
+              <input type="number" id="rn136-level" min="0" max="10" step="1" value="0" />
+              <label class="maxed-check"><input type="checkbox" id="rn136-maxed" /> maxed</label>
+            </span>
+          </label>
+          <label><span class="label-text">Max search iterations
+            <span class="info-icon" tabindex="0" data-tooltip-key="max-iterations">i</span>
+          </span>
+            <input type="number" id="max-iterations" step="1000" value="50000" />
+          </label>
+          <label><span class="label-text">Shop: Singularity Local Speed level
+            <span class="info-icon" tabindex="0" data-tooltip-key="shop-local-speed-level">i</span>
+          </span>
+            <input type="number" id="shop-local-speed-level" min="0" max="10" step="1" value="0" />
+          </label>
+          <label><span class="label-text">Shop: Singularity Mult Gain level
+            <span class="info-icon" tabindex="0" data-tooltip-key="shop-mult-gain-level">i</span>
+          </span>
+            <input type="number" id="shop-mult-gain-level" min="0" max="10" step="1" value="0" />
+          </label>
+        </div>
+      </details>
+    </section>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="planner" role="tab" aria-selected="true">Path Planner</button>
+      <button class="tab" data-tab="exponent" role="tab" aria-selected="false">Time to Exponent</button>
+    </div>
+
+    <section id="tab-planner" class="tab-panel active" data-tab="planner" role="tabpanel">
+      <div class="actions">
+        <button id="find-path-btn" class="primary">Find Optimal Path</button>
+        <button id="find-push-btn" class="primary">Find Push Path (3 variants)</button>
+        <button id="rank-tree-push-btn" title="Compare +1 level on each tree node for your push targets">Rank tree for push</button>
+        <button id="blank-scenario-btn">Start Blank Custom Plan</button>
+        <button id="clear-scenarios-btn" class="danger" title="Delete all scenarios">Clear All Plans</button>
+      </div>
+
+      <div class="rush-node-panel">
+        <h3>Rush a tree node
+          <span class="info-icon" tabindex="0" data-tooltip-key="rush-node">i</span>
+        </h3>
+        <div class="grid">
+          <label><span class="label-text">Node</span>
+            <select id="rush-node-id">
+              <option value="1.0">STN 1.0</option>
+              <option value="2.0" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 2 (estimated cost)</option>
+              <option value="3.1">STN 3.1</option>
+              <option value="3.2">STN 3.2</option>
+              <option value="4.1" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 4.1 (estimated cost)</option>
+              <option value="4.2" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 4.2 (estimated cost)</option>
+              <option value="5.1" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 5.1 (estimated cost)</option>
+              <option value="5.2" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 5.2 (estimated cost)</option>
+              <option value="6.1" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 6.1 (estimated cost)</option>
+              <option value="6.2" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 6.2 (estimated cost)</option>
+              <option value="7.1" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 7.1 (estimated cost)</option>
+              <option value="7.2" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 7.2 (estimated cost)</option>
+              <option value="8.0" title="No confirmed upgrade cost -- see NOTES/gaps.md #7. Uses an estimated formula unless you enter the cost shown in-game below.">STN 8 (estimated cost)</option>
+            </select>
+            <span class="select-hint">"Estimated cost" nodes use a guessed formula (NOTES/gaps.md #7) unless you fill in the field below.</span>
+          </label>
+          <label id="rush-cost-field" hidden>
+            <span class="label-text">Cost shown in-game now (10^x)
+              <span class="info-icon" tabindex="0" data-tooltip-key="rush-cost-shown">i</span>
+            </span>
+            <input type="number" id="rush-cost-shown" step="any" placeholder="optional -- else estimated" />
+          </label>
+          <label><span class="label-text">Target ascension</span>
+            <input type="number" id="rush-target-ascension" min="0" step="1" value="0" />
+          </label>
+          <label><span class="label-text">Target level (0-9)</span>
+            <input type="number" id="rush-target-level" min="0" max="9" step="1" value="0" />
+          </label>
+        </div>
+        <div class="actions quick-add-row">
+          <span class="label-text">Quick target from current:</span>
+          <button type="button" class="quick-add-btn" data-add="1">+1</button>
+          <button type="button" class="quick-add-btn" data-add="5">+5</button>
+          <button type="button" class="quick-add-btn" data-add="10">+10</button>
+          <button type="button" class="quick-add-btn" data-add="15">+15</button>
+          <button type="button" class="quick-add-btn" data-add="20">+20</button>
+        </div>
+        <div class="actions">
+          <button id="rush-node-btn" class="primary">Find Rush Path</button>
+          <button id="rank-tree-rush-btn" title="Hypothetical: how much faster would THIS rush become if a tree node were +1 ascension already, or if Mult were +100? Purchase cost not included.">Rank tree for this rush</button>
+        </div>
+      </div>
+
+      <p id="status" class="status"></p>
+      <div id="tree-rank-result" class="tree-rank" hidden></div>
+      <div id="rush-rank-result" class="tree-rank" hidden></div>
+      <div id="scenarios-section">
+        <h2>Scenarios</h2>
+        <div id="scenarios"></div>
+      </div>
+    </section>
+
+    <section id="tab-exponent" class="tab-panel" data-tab="exponent" role="tabpanel" hidden>
+      <h2>Time to exponent</h2>
+      <p class="subtitle">
+        How long to grow from 10<sup>x</sup> to 10<sup>y</sup> atoms at your current
+        Singularity Mult and stats above (no upgrades or Singularizing along the way).
+      </p>
+      <div class="grid">
+        <label><span class="label-text">From exponent (x)
+          <span class="info-icon" tabindex="0" data-tooltip-key="exp-from">i</span>
+        </span>
+          <input type="number" id="exp-from" step="any" value="0" />
+        </label>
+        <label><span class="label-text">To exponent (y)
+          <span class="info-icon" tabindex="0" data-tooltip-key="exp-to">i</span>
+        </span>
+          <input type="number" id="exp-to" step="any" value="308" />
+        </label>
+      </div>
+      <div class="actions">
+        <button id="calc-exponent-btn" class="primary">Calculate time</button>
+      </div>
+      <p id="exponent-result" class="status"></p>
+      <div id="exponent-chart" class="exp-chart" hidden></div>
+      <div id="exponent-thresholds"></div>
+    </section>
+  </div>
+
+  <script type="module" src="js/app.js?v=20260722b"></script>
+</body>
+</html>
