@@ -1,7 +1,7 @@
 // Atom-amount-gated buffs/penalties on Atom Gain.
 // Direct port of singularity_sim/atom_penalties.py.
 
-import { LogNum } from "./bignum.js?v=20260722b";
+import { LogNum } from "./bignum.js?v=20260723a";
 
 export const RELIC_69_LEVEL_SLOPE = 0.0066;
 

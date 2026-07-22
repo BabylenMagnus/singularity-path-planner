@@ -3,7 +3,7 @@
 // 10 use an ESTIMATED base cost (see NOTES/gaps.md #7) as a default that the
 // UI lets the player override once they read a real number off the game.
 
-import { LogNum } from "./bignum.js?v=20260722b";
+import { LogNum } from "./bignum.js?v=20260723a";
 
 // All 13 nodes share the same step formula (baseAtomCostStep=e5,
 // costStepIncreasePerAscend=e5 -- confirmed identical across 1.0/3.1/3.2
@@ -41,23 +41,32 @@ export const STN_DEFINITIONS = {
   // next cost 1.00e660): backsolved baseAtomCost = 660 - 10*7 = e590. Was an
   // e540 guess.
   "5.1": { baseAtomCost: LogNum.parse("e590"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
-  // --- Everything below is UNCONFIRMED. Re-derived 2026-07-22 after the old
-  // global "+60/tier" fit (through only 1.0 and 3.1/3.2) was disproven by 4
+  // --- 5.2/6.1/7.1/7.2 are UNCONFIRMED. Re-derived 2026-07-23 after the old
+  // global "+60/tier" fit (through only 1.0 and 3.1/3.2) was disproven by
   // real readings that don't move monotonically by tier at all (see
-  // NOTES/gaps.md #7). New method: nearest-known extrapolation instead of a
-  // single global line -- each guess below is the last confirmed tier's
-  // value (tier 5 average, using 5.1's real e590 for both siblings since 5.2
-  // has no reading yet) plus a per-tier STEP recomputed from the two most
-  // recent CONFIRMED tiers (tier 4 avg (417+475)/2=446 -> tier 5's 590 is a
-  // +144 step), carried forward one tier at a time: 590 -> 734 -> 878 -> 1022.
-  // Still just a guess -- replace with a real reading (tree-editor-panel's
-  // "Next level cost" field) whenever you have one, same as the 5 nodes above.
+  // NOTES/gaps.md #7). Method: nearest-known extrapolation instead of a
+  // single global line -- 5.2 borrows its known tier-mate 5.1 (e590) as-is;
+  // 6.1 borrows its known tier-mate 6.2 (e773) as-is; 7.1/7.2 have no known
+  // tier-mate, so they get tier 6's value (773) plus a step recomputed from
+  // the two most recent CONFIRMED tiers (tier 5 avg 590 -> tier 6's 773 is a
+  // +183 step): 773 + 183 = 956. Still just a guess -- replace with a real
+  // reading (tree-editor-panel's "Next level cost" field) whenever you have
+  // one, same as the confirmed nodes above/below.
   "5.2": { baseAtomCost: LogNum.parse("e590"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
-  "6.1": { baseAtomCost: LogNum.parse("e734"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
-  "6.2": { baseAtomCost: LogNum.parse("e734"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
-  "7.1": { baseAtomCost: LogNum.parse("e878"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
-  "7.2": { baseAtomCost: LogNum.parse("e878"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
-  "8.0": { baseAtomCost: LogNum.parse("e1022"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
+  "6.1": { baseAtomCost: LogNum.parse("e773"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
+  // Confirmed 2026-07-23 from a real in-game reading (ascension 4, level 7 ->
+  // next cost 1.00e948): backsolved baseAtomCost = 948 - 25*7 = e773.
+  "6.2": { baseAtomCost: LogNum.parse("e773"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
+  "7.1": { baseAtomCost: LogNum.parse("e956"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
+  "7.2": { baseAtomCost: LogNum.parse("e956"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
+  // Confirmed 2026-07-23 from a real in-game reading (ascension 0, level 3 ->
+  // next cost 1.00e1030): backsolved baseAtomCost = 1030 - 5*3 = e1015 (at
+  // ascension 0 the effective step is just baseAtomCostStep=e5, unscaled).
+  // Was an e1022 guess -- close, and it also confirms the guess chain's step
+  // (734 -> 878, both derived from the pre-8.0 known tiers) still holds since
+  // regenerating with 8.0 now known leaves 5.2/6.1/6.2/7.1/7.2 unchanged (the
+  // propagation only looks backward from each unknown tier).
+  "8.0": { baseAtomCost: LogNum.parse("e1015"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
 };
 
 export function hasConfirmedCost(stnId) {

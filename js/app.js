@@ -1,22 +1,22 @@
-import { LogNum } from "./bignum.js?v=20260722b";
+import { LogNum } from "./bignum.js?v=20260723a";
 import {
   relic69LevelBonus, baseExponent,
   rn126Exponent, rn127Exponent, rn128Exponent, rn131Factor,
   E10_PENALTY_NAME, E50_PENALTY_NAME, E154_PENALTY_NAME,
-} from "./atomPenalties.js?v=20260722b";
-import { formatDuration, estimateTimeToNextSingularity } from "./growth.js?v=20260722b";
-import { totalMult, nodeEffect, stn8Multiplier, weakenedPenaltyExponent } from "./singularize.js?v=20260722b";
-import { replayActionsPartial, E308_PENALTY_NAME, E500_PENALTY_NAME, E1000_PENALTY_NAME } from "./pathSearch.js?v=20260722b";
-import { applyTooltips } from "./tooltips.js?v=20260722b";
-import { buildTreeSvg, TREE_NODE_IDS, NODE_INPUT_PREFIX } from "./treeViz.js?v=20260722b";
+} from "./atomPenalties.js?v=20260723a";
+import { formatDuration, estimateTimeToNextSingularity } from "./growth.js?v=20260723a";
+import { totalMult, nodeEffect, stn8Multiplier, weakenedPenaltyExponent } from "./singularize.js?v=20260723a";
+import { replayActionsPartial, E308_PENALTY_NAME, E500_PENALTY_NAME, E1000_PENALTY_NAME } from "./pathSearch.js?v=20260723a";
+import { applyTooltips } from "./tooltips.js?v=20260723a";
+import { buildTreeSvg, TREE_NODE_IDS, NODE_INPUT_PREFIX } from "./treeViz.js?v=20260723a";
 import {
   hasConfirmedCost, backsolveBaseCostLog10, nextUpgradeCost, advanceByBuys,
   defaultBaseAtomCostLog10, regenerateCostGuesses,
-} from "./tree.js?v=20260722b";
+} from "./tree.js?v=20260723a";
 import {
   actionLabel, isGrindAction, escapeHtml, actionOptionsHtml, stnCell, multCell,
   NODE_KEYS, buildThresholdList, buildExponentChart,
-} from "./renderHelpers.js?v=20260722b";
+} from "./renderHelpers.js?v=20260723a";
 
 const STORAGE_KEY = "revidle-planner-scenarios-v2";
 
@@ -683,7 +683,7 @@ const pendingOptimizations = new Map();
 
 function ensureWorker() {
   if (optimizerWorker) return optimizerWorker;
-  optimizerWorker = new Worker(new URL("./optimizer.worker.js?v=20260722b", import.meta.url), { type: "module" });
+  optimizerWorker = new Worker(new URL("./optimizer.worker.js?v=20260723a", import.meta.url), { type: "module" });
   optimizerWorker.onmessage = (e) => {
     const { id, ok, result, error } = e.data;
     const pending = pendingOptimizations.get(id);

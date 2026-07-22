@@ -5,7 +5,7 @@
 // (state) => htmlString, same shape as renderHelpers.js's other builders --
 // no DOM access, no module state.
 
-import { TOOLTIPS } from "./tooltips.js?v=20260722b";
+import { TOOLTIPS } from "./tooltips.js?v=20260723a";
 
 // Node id -> the existing input-id prefix (n1/s31/... predate this file;
 // keeping them lets loadForm()/persistForm() in app.js work unmodified,

@@ -3,7 +3,7 @@
 // string out. Split out of app.js so the stateful UI code (scenario CRUD,
 // event wiring) isn't tangled up with presentation formatting.
 
-import { formatDuration } from "./growth.js?v=20260722b";
+import { formatDuration } from "./growth.js?v=20260723a";
 
 export const ACTIONS = ["grind", "upgrade_1.0", "upgrade_3.1", "upgrade_3.2", "final_push"];
 export const ACTION_LABELS = {
