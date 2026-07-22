@@ -6,11 +6,11 @@
 // lives here -- if a planner needs it, it's exported; everything stays a
 // closed, cycle-free dependency (planners import this, never the reverse).
 
-import { LogNum } from "./bignum.js?v=20260723a";
-import { CompoundGrowthProjector, DEFAULT_SINGULARITY_REQUIREMENT, realSecondsFromIntegral } from "./growth.js?v=20260723a";
-import { multAfterSingularize, totalMult, weakenedPenaltyExponent } from "./singularize.js?v=20260723a";
-import { baseExponent } from "./atomPenalties.js?v=20260723a";
-import { nextUpgradeCost } from "./tree.js?v=20260723a";
+import { LogNum } from "./bignum.js?v=20260723b";
+import { CompoundGrowthProjector, DEFAULT_SINGULARITY_REQUIREMENT, realSecondsFromIntegral } from "./growth.js?v=20260723b";
+import { multAfterSingularize, totalMult, weakenedPenaltyExponent } from "./singularize.js?v=20260723b";
+import { baseExponent } from "./atomPenalties.js?v=20260723b";
+import { nextUpgradeCost } from "./tree.js?v=20260723b";
 
 export const E308_PENALTY_NAME = "penalty_1_798e308";
 export const E500_PENALTY_NAME = "penalty_1e500";

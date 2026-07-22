@@ -1,71 +1,82 @@
 // Singularity Tree Node (STN) cost mechanics. Direct port of
-// singularity_sim/tree.py for the 3 confirmed nodes (1.0/3.1/3.2); the other
-// 10 use an ESTIMATED base cost (see NOTES/gaps.md #7) as a default that the
-// UI lets the player override once they read a real number off the game.
+// singularity_sim/tree.py for the 3 confirmed nodes (1.0/3.1/3.2). The other
+// 10 are now ALSO confirmed from real in-game readings (2026-07-23) -- every
+// node in the tree has a real baseAtomCost, no guesses left. See the
+// backsolve math below each entry.
+//
+// Reading format from the player: "A-B -> N" means ascension A, level B,
+// shown next-upgrade-cost with total log10 exponent N (a bare "AeB" reading
+// like "10e567" must first be corrected to log10 = B + log10(A) = 568 --
+// the mantissa is NOT the exponent, confirmed by the player's own "100e798
+// то есть 800" = 798 + log10(100) = 800).
 
-import { LogNum } from "./bignum.js?v=20260723a";
+import { LogNum } from "./bignum.js?v=20260723b";
 
-// All 13 nodes share the same step formula (baseAtomCostStep=e5,
-// costStepIncreasePerAscend=e5 -- confirmed identical across 1.0/3.1/3.2
-// despite their different (a,p,b) effect params), so only baseAtomCost
-// varies per node. The 10 `confirmed: false` entries use a linear-per-tier
-// guess fit through the 3 known points (tier 1 = e300, tier 3 = e420 ->
-// +60/tier) -- see NOTES/gaps.md #7 for the full derivation. Treat these as
-// placeholders, not ground truth.
+// costStepIncreasePerAscend=e5 is shared across every node (confirmed
+// identical for 1.0/3.1/3.2 from the python source, and consistent with
+// every node backsolved below). baseAtomCostStep, however, is NOT shared --
+// node 2.0 proved this (see its entry): its own step is e12, not e5. Nodes
+// with only a single real reading keep the e5 default since a single
+// (base, step) pair can't be solved from one equation; treat those as the
+// best available fit, not verified ground truth, until a second same-
+// ascension reading at a different level pins the step down like it did
+// for 2.0.
 const STEP = LogNum.parse("e5");
 const ASCEND_STEP = LogNum.parse("e5");
 
 export const STN_DEFINITIONS = {
   "1.0": { baseAtomCost: LogNum.parse("e300"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
-  // Confirmed 2026-07-22 from a real in-game reading (ascension 6, level 4 ->
-  // next cost 1.00e567): backsolved baseAtomCost = 567 - 35*4 = e427. Was a
-  // e360 guess (linear-per-tier fit through 1.0=e300/3.1-3.2=e420) -- the
-  // real value is HIGHER than tier 3's e420, breaking that linear-tier
-  // assumption entirely (see NOTES/gaps.md #7 for what this means for the
-  // other 8 still-unconfirmed nodes).
-  "2.0": { baseAtomCost: LogNum.parse("e427"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
+  // Confirmed 2026-07-23 from TWO real readings at the SAME ascension (6):
+  // level 4 -> e568 (10e567 corrected), level 5 -> e610. Their difference
+  // (610-568=42) IS the node's real effectiveStep at ascension 6 -- but the
+  // shared formula predicts baseStep(e5)+ascend(6*e5)=35, a 7-off mismatch.
+  // Solving with costStepIncreasePerAscend still shared at e5 (confirmed
+  // elsewhere): baseAtomCostStep = 42 - 6*5 = e12, not e5. Then
+  // baseAtomCost = 568 - 42*4 = 610 - 42*5 = e400 (both levels agree
+  // exactly). This is the proof that baseAtomCostStep is per-node, like
+  // baseAtomCost itself, not a shared e5 constant.
+  "2.0": { baseAtomCost: LogNum.parse("e400"), baseAtomCostStep: LogNum.parse("e12"), costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
   "3.1": { baseAtomCost: LogNum.parse("e420"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
   "3.2": { baseAtomCost: LogNum.parse("e420"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
   // Confirmed 2026-07-22 from a real in-game reading (ascension 8, level 7 ->
-  // next cost 1.00e732): backsolved baseAtomCost = 732 - 45*7 = e417. Was an
-  // e480 guess -- the real value is LOWER than tier 3's e420 too (not just
-  // below the tier-4 guess), further confirming cost doesn't track tier
-  // position monotonically (see 2.0's e427 above and NOTES/gaps.md #7).
+  // next cost e732, already a bare exponent, no mantissa correction needed):
+  // backsolved baseAtomCost = 732 - 45*7 = e417 (using the shared e5/e5 step
+  // since only one reading exists for this node).
   "4.1": { baseAtomCost: LogNum.parse("e417"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
-  // Confirmed 2026-07-22 from a real in-game reading (ascension 3, level 1 ->
-  // next cost 1.00e495): backsolved baseAtomCost = 495 - 20*1 = e475. Was an
-  // e480 guess (close by luck -- 4.1's e417 in the SAME tier shows the guess
-  // method isn't reliable even when a number happens to land nearby).
-  "4.2": { baseAtomCost: LogNum.parse("e475"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
+  // Confirmed 2026-07-23 from a real in-game reading (ascension 3, level 1 ->
+  // next cost e496, corrected from "10e495"): backsolved baseAtomCost =
+  // 496 - 20*1 = e476.
+  "4.2": { baseAtomCost: LogNum.parse("e476"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
   // Confirmed 2026-07-22 from a real in-game reading (ascension 1, level 7 ->
-  // next cost 1.00e660): backsolved baseAtomCost = 660 - 10*7 = e590. Was an
-  // e540 guess.
+  // next cost 1.00e660, a bare exponent): backsolved baseAtomCost =
+  // 660 - 10*7 = e590.
   "5.1": { baseAtomCost: LogNum.parse("e590"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
-  // --- 5.2/6.1/7.1/7.2 are UNCONFIRMED. Re-derived 2026-07-23 after the old
-  // global "+60/tier" fit (through only 1.0 and 3.1/3.2) was disproven by
-  // real readings that don't move monotonically by tier at all (see
-  // NOTES/gaps.md #7). Method: nearest-known extrapolation instead of a
-  // single global line -- 5.2 borrows its known tier-mate 5.1 (e590) as-is;
-  // 6.1 borrows its known tier-mate 6.2 (e773) as-is; 7.1/7.2 have no known
-  // tier-mate, so they get tier 6's value (773) plus a step recomputed from
-  // the two most recent CONFIRMED tiers (tier 5 avg 590 -> tier 6's 773 is a
-  // +183 step): 773 + 183 = 956. Still just a guess -- replace with a real
-  // reading (tree-editor-panel's "Next level cost" field) whenever you have
-  // one, same as the confirmed nodes above/below.
-  "5.2": { baseAtomCost: LogNum.parse("e590"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
-  "6.1": { baseAtomCost: LogNum.parse("e773"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
+  // Confirmed 2026-07-23 from a real in-game reading (ascension 1, level 6 ->
+  // next cost e640, corrected from "10e639"): backsolved baseAtomCost =
+  // 640 - 10*6 = e580.
+  "5.2": { baseAtomCost: LogNum.parse("e580"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
+  // Confirmed 2026-07-23 from a real in-game reading (ascension 1, level 2 ->
+  // next cost e640, corrected from "10e639"): backsolved baseAtomCost =
+  // 640 - 10*2 = e620.
+  "6.1": { baseAtomCost: LogNum.parse("e620"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
   // Confirmed 2026-07-23 from a real in-game reading (ascension 4, level 7 ->
-  // next cost 1.00e948): backsolved baseAtomCost = 948 - 25*7 = e773.
-  "6.2": { baseAtomCost: LogNum.parse("e773"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
-  "7.1": { baseAtomCost: LogNum.parse("e956"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
-  "7.2": { baseAtomCost: LogNum.parse("e956"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: false },
+  // next cost e950, corrected from "100e948"): backsolved baseAtomCost =
+  // 950 - 25*7 = e775.
+  "6.2": { baseAtomCost: LogNum.parse("e775"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
+  // Confirmed 2026-07-23 from a real in-game reading at LEVEL 0 (ascension 1,
+  // level 0 -> next cost e800, "100e798 то есть 800" -- player did the
+  // mantissa correction themselves). Level 0 means cost = baseAtomCost
+  // exactly (effectiveStep^0 = 1), so this is an exact reading, no step
+  // assumption involved at all.
+  "7.1": { baseAtomCost: LogNum.parse("e800"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
   // Confirmed 2026-07-23 from a real in-game reading (ascension 0, level 3 ->
-  // next cost 1.00e1030): backsolved baseAtomCost = 1030 - 5*3 = e1015 (at
-  // ascension 0 the effective step is just baseAtomCostStep=e5, unscaled).
-  // Was an e1022 guess -- close, and it also confirms the guess chain's step
-  // (734 -> 878, both derived from the pre-8.0 known tiers) still holds since
-  // regenerating with 8.0 now known leaves 5.2/6.1/6.2/7.1/7.2 unchanged (the
-  // propagation only looks backward from each unknown tier).
+  // next cost e830, corrected from "100e828"): backsolved baseAtomCost =
+  // 830 - 5*3 = e815 (ascension 0 -> effectiveStep is just baseAtomCostStep
+  // unscaled).
+  "7.2": { baseAtomCost: LogNum.parse("e815"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
+  // Confirmed 2026-07-22 from a real in-game reading (ascension 0, level 3 ->
+  // next cost 1030, a bare exponent): backsolved baseAtomCost =
+  // 1030 - 5*3 = e1015.
   "8.0": { baseAtomCost: LogNum.parse("e1015"), baseAtomCostStep: STEP, costStepIncreasePerAscend: ASCEND_STEP, confirmed: true },
 };
 

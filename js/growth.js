@@ -1,9 +1,9 @@
 // Compound-growth atom accumulation and time-to-next-Singularity estimation.
 // Direct port of singularity_sim/growth.py.
 
-import { LogNum } from "./bignum.js?v=20260723a";
-import { ATOM_THRESHOLD_PENALTIES, activePenaltyExponents, effectiveExponent } from "./atomPenalties.js?v=20260723a";
-import { EXPONENT_MULTIPLIER, atomGain, pChainProduct } from "./formula.js?v=20260723a";
+import { LogNum } from "./bignum.js?v=20260723b";
+import { ATOM_THRESHOLD_PENALTIES, activePenaltyExponents, effectiveExponent } from "./atomPenalties.js?v=20260723b";
+import { EXPONENT_MULTIPLIER, atomGain, pChainProduct } from "./formula.js?v=20260723b";
 
 export const DEFAULT_SINGULARITY_REQUIREMENT = LogNum.parse("1e308");
 

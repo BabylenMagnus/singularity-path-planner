@@ -5,22 +5,22 @@
 // beam engine; owns nothing about the mult-goal planner (pathSearch.js) or
 // the single-node rush planner (nodeRush.js).
 
-import { LogNum } from "./bignum.js?v=20260723a";
+import { LogNum } from "./bignum.js?v=20260723b";
 import {
   baseExponent, rn126Exponent, rn127Exponent, rn128Exponent,
   E10_PENALTY_NAME, E50_PENALTY_NAME, E154_PENALTY_NAME,
-} from "./atomPenalties.js?v=20260723a";
-import { realSecondsFromIntegral } from "./growth.js?v=20260723a";
+} from "./atomPenalties.js?v=20260723b";
+import { realSecondsFromIntegral } from "./growth.js?v=20260723b";
 import {
   multAfterSingularize, totalMult, weakenedPenaltyExponent,
   nodeEffect, stn8Multiplier,
-} from "./singularize.js?v=20260723a";
+} from "./singularize.js?v=20260723b";
 import {
   E1000_PENALTY_NAME, PUSH_MAX_SINGS, ATOMS_LOG10_BUCKET, MULT_BUCKET, roundTo,
   growthIntegral, activeBonusKey, getSingTrajectory, applyGrinds,
   penaltyOverridesFor, grindToGoalStep, searchUpgradePrefix, tryInsertImprovements,
   evaluateSequence, n1Score,
-} from "./searchCore.js?v=20260723a";
+} from "./searchCore.js?v=20260723b";
 
 // Push-mode tree search is dominated by shortcut evals; a modest iteration
 // cap keeps UI snappy. Mult-goal findOptimalPath still uses the full budget.
