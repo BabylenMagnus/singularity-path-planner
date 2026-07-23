@@ -14,11 +14,11 @@
 // those targets get one extra local state field (targetLevel/targetAscension)
 // and one extra local edge (upgradeTarget), tracked only inside this file.
 
-import { LogNum } from "./bignum.js?v=20260723b";
-import { MinHeap, grind, upgrade, upgradeChoices, visitedKey, project, penaltyOverridesFor, E1000_PENALTY_NAME } from "./searchCore.js?v=20260723b";
-import { nextUpgradeCost } from "./tree.js?v=20260723b";
-import { weakenedPenaltyExponent, stn8Multiplier, nodeEffect } from "./singularize.js?v=20260723b";
-import { baseExponent, rn126Exponent, rn127Exponent, rn128Exponent, E10_PENALTY_NAME, E50_PENALTY_NAME, E154_PENALTY_NAME } from "./atomPenalties.js?v=20260723b";
+import { LogNum } from "./bignum.js?v=20260723c";
+import { MinHeap, grind, upgrade, upgradeChoices, visitedKey, project, penaltyOverridesFor, E1000_PENALTY_NAME } from "./searchCore.js?v=20260723c";
+import { nextUpgradeCost } from "./tree.js?v=20260723c";
+import { weakenedPenaltyExponent, stn8Multiplier, nodeEffect } from "./singularize.js?v=20260723c";
+import { baseExponent, rn126Exponent, rn127Exponent, rn128Exponent, E10_PENALTY_NAME, E50_PENALTY_NAME, E154_PENALTY_NAME } from "./atomPenalties.js?v=20260723c";
 
 const RUSH_NODE_FIELDS = {
   "1.0": ["n1Level", "n1Ascension"],

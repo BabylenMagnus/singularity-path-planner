@@ -10,7 +10,7 @@
 // the mantissa is NOT the exponent, confirmed by the player's own "100e798
 // то есть 800" = 798 + log10(100) = 800).
 
-import { LogNum } from "./bignum.js?v=20260723b";
+import { LogNum } from "./bignum.js?v=20260723c";
 
 // costStepIncreasePerAscend=e5 is shared across every node (confirmed
 // identical for 1.0/3.1/3.2 from the python source, and consistent with

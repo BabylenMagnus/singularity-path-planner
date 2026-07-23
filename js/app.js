@@ -1,22 +1,22 @@
-import { LogNum } from "./bignum.js?v=20260723b";
+import { LogNum } from "./bignum.js?v=20260723c";
 import {
   relic69LevelBonus, baseExponent,
   rn126Exponent, rn127Exponent, rn128Exponent, rn131Factor,
   E10_PENALTY_NAME, E50_PENALTY_NAME, E154_PENALTY_NAME,
-} from "./atomPenalties.js?v=20260723b";
-import { formatDuration, estimateTimeToNextSingularity } from "./growth.js?v=20260723b";
-import { totalMult, nodeEffect, stn8Multiplier, weakenedPenaltyExponent } from "./singularize.js?v=20260723b";
-import { replayActionsPartial, E308_PENALTY_NAME, E500_PENALTY_NAME, E1000_PENALTY_NAME } from "./pathSearch.js?v=20260723b";
-import { applyTooltips } from "./tooltips.js?v=20260723b";
-import { buildTreeSvg, TREE_NODE_IDS, NODE_INPUT_PREFIX } from "./treeViz.js?v=20260723b";
+} from "./atomPenalties.js?v=20260723c";
+import { formatDuration, estimateTimeToNextSingularity } from "./growth.js?v=20260723c";
+import { totalMult, nodeEffect, stn8Multiplier, weakenedPenaltyExponent } from "./singularize.js?v=20260723c";
+import { replayActionsPartial, E308_PENALTY_NAME, E500_PENALTY_NAME, E1000_PENALTY_NAME } from "./pathSearch.js?v=20260723c";
+import { applyTooltips } from "./tooltips.js?v=20260723c";
+import { buildTreeSvg, TREE_NODE_IDS, NODE_INPUT_PREFIX } from "./treeViz.js?v=20260723c";
 import {
   hasConfirmedCost, backsolveBaseCostLog10, nextUpgradeCost, advanceByBuys,
   defaultBaseAtomCostLog10, regenerateCostGuesses,
-} from "./tree.js?v=20260723b";
+} from "./tree.js?v=20260723c";
 import {
   actionLabel, isGrindAction, escapeHtml, actionOptionsHtml, stnCell, multCell,
   NODE_KEYS, buildThresholdList, buildExponentChart,
-} from "./renderHelpers.js?v=20260723b";
+} from "./renderHelpers.js?v=20260723c";
 
 const STORAGE_KEY = "revidle-planner-scenarios-v2";
 
@@ -683,7 +683,7 @@ const pendingOptimizations = new Map();
 
 function ensureWorker() {
   if (optimizerWorker) return optimizerWorker;
-  optimizerWorker = new Worker(new URL("./optimizer.worker.js?v=20260723b", import.meta.url), { type: "module" });
+  optimizerWorker = new Worker(new URL("./optimizer.worker.js?v=20260723c", import.meta.url), { type: "module" });
   optimizerWorker.onmessage = (e) => {
     const { id, ok, result, error } = e.data;
     const pending = pendingOptimizations.get(id);
@@ -770,8 +770,10 @@ async function onFindPushPath() {
   }
 }
 
-// Rank +1 level on each tree node by time saved on the current push targets.
-// Cost of buying the node is NOT modeled — only post-purchase push speed.
+// Rank +1 full ascension on each tree node (plus a flat Mult bump) by time
+// saved on the current push targets -- same convention as "Rank tree for
+// rush". Cost of buying the node is NOT modeled — only post-purchase push
+// speed.
 async function onRankTreeForPush() {
   const panel = el("tree-rank-result");
   let stats;
@@ -833,21 +835,21 @@ async function onRankTreeForPush() {
     const top = res.rankings[0];
     const topNote = top && top.savedSeconds != null && top.savedSeconds > 0.05
       ? `Best next buy for this push: <strong>${escapeHtml(top.label)}</strong> (saves ${formatDuration(top.savedSeconds)}).`
-      : "No single +1 tree level meaningfully shortens this push (all ≈ 0). Still useful if you are investing in tree long-term — pick by later targets.";
+      : "No single +1 ascension or Mult bump meaningfully shortens this push (all ≈ 0). Still useful if you are investing in tree long-term — pick by later targets.";
 
     panel.innerHTML = `
       <h3>Tree upgrade rank for push ${escapeHtml(targetsLabel)}</h3>
       <p class="tree-rank-note">
         Baseline (current tree): <strong>${formatDuration(base)}</strong>
         ${res.baselineVariant ? ` · best plan: ${escapeHtml(res.baselineVariant)}` : ""}.
-        Each row is hypothetical <em>+1 level only</em> (upgrade cost not included).
+        Each row is hypothetical <em>+1 full ascension</em> (not +1 level -- see tooltip) or a flat Mult bump, upgrade/purchase cost not included.
       </p>
       <p class="tree-rank-note">${topNote}</p>
       <table>
         <thead>
           <tr>
             <th>#</th>
-            <th>Upgrade (asc:level)</th>
+            <th>Hypothetical change</th>
             <th>Push time after</th>
             <th>vs baseline</th>
           </tr>

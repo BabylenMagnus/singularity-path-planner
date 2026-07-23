@@ -5,22 +5,22 @@
 // beam engine; owns nothing about the mult-goal planner (pathSearch.js) or
 // the single-node rush planner (nodeRush.js).
 
-import { LogNum } from "./bignum.js?v=20260723b";
+import { LogNum } from "./bignum.js?v=20260723c";
 import {
   baseExponent, rn126Exponent, rn127Exponent, rn128Exponent,
   E10_PENALTY_NAME, E50_PENALTY_NAME, E154_PENALTY_NAME,
-} from "./atomPenalties.js?v=20260723b";
-import { realSecondsFromIntegral } from "./growth.js?v=20260723b";
+} from "./atomPenalties.js?v=20260723c";
+import { realSecondsFromIntegral } from "./growth.js?v=20260723c";
 import {
   multAfterSingularize, totalMult, weakenedPenaltyExponent,
   nodeEffect, stn8Multiplier,
-} from "./singularize.js?v=20260723b";
+} from "./singularize.js?v=20260723c";
 import {
   E1000_PENALTY_NAME, PUSH_MAX_SINGS, ATOMS_LOG10_BUCKET, MULT_BUCKET, roundTo,
   growthIntegral, activeBonusKey, getSingTrajectory, applyGrinds,
   penaltyOverridesFor, grindToGoalStep, searchUpgradePrefix, tryInsertImprovements,
   evaluateSequence, n1Score,
-} from "./searchCore.js?v=20260723b";
+} from "./searchCore.js?v=20260723c";
 
 // Push-mode tree search is dominated by shortcut evals; a modest iteration
 // cap keeps UI snappy. Mult-goal findOptimalPath still uses the full budget.
@@ -259,15 +259,19 @@ function cloneTreeState(tree) {
   return out;
 }
 
-/** +1 level on stnId (auto-ascend at 10). Returns { tree, from, to }. */
-function bumpTreeNode(tree, stnId) {
+// +1 full ascension on stnId (not +1 level -- same reasoning as
+// nodeRush.js's bumpTreeNodeAscension: a node's effect is diluted by a
+// growing ascension-denominator term, so a level-only bump barely moves the
+// needle at high ascension while a full ascension bump does. Lands on
+// level 1 of the next ascension, mirroring the real auto-ascend wrap
+// (tree.js advanceByBuys). Kept identical to rankRushTreeUpgrades's version
+// so "Rank tree for push" and "Rank tree for rush" report the same kind of
+// hypothetical.
+function bumpTreeNodeAscension(tree, stnId) {
   const next = cloneTreeState(tree);
-  let [level, ascension] = next[stnId] ?? [0, 0];
-  const from = { level, ascension };
-  level += 1;
-  if (level >= 10) { level = 1; ascension += 1; }
-  next[stnId] = [level, ascension];
-  return { tree: next, from, to: { level, ascension } };
+  const [level, ascension] = next[stnId] ?? [0, 0];
+  next[stnId] = [1, ascension + 1];
+  return { tree: next, from: { level, ascension }, to: { level: 1, ascension: ascension + 1 } };
 }
 
 function formatAscLevel(level, ascension) {
@@ -278,6 +282,9 @@ function formatAscLevel(level, ascension) {
  * Rank a single +1 purchase on each tree node by how much it shortens the
  * push to pushExponents (best of findPushPathVariants). totalMultBase must be
  * the underlying base (shown TM / (node1 * stn8)), not the live shown TM.
+ * Also ranks a flat Mult bump as a directly comparable no-tree-change lever
+ * -- same convention as nodeRush.js's rankRushTreeUpgrades, so "Rank tree
+ * for push" and "Rank tree for rush" report the same kind of hypothetical.
  *
  * Does NOT model upgrade cost — only in-push time savings.
  */
@@ -287,10 +294,11 @@ export function rankPushTreeUpgrades({
   localSpeed = 2.34, currentAtoms = "1", maxIterations = 50_000, multBonuses = [],
   shopMultGainBonus = 1, relic69Bonus = null,
   rn126Level = 0, rn127Level = 0, rn128Level = 0,
+  multBonusPercent = 0.10,
 }) {
   const baseTree = cloneTreeState(initialTreeState);
 
-  function runPush(tree) {
+  function runPush(tree, mult = startingMult) {
     const stn8 = stn8Multiplier(...(tree["8.0"] ?? [0, 0]));
     // Match app.js: 6.1 effect is not multiplied by STN8 in the planner form.
     const stn61 = nodeEffect("6.1", ...(tree["6.1"] ?? [0, 0]));
@@ -307,7 +315,7 @@ export function rankPushTreeUpgrades({
 
     const res = findPushPathVariants({
       pushExponents,
-      startingMult,
+      startingMult: mult,
       totalMultBase,
       initialTreeState: tree,
       staticFactors,
@@ -335,7 +343,7 @@ export function rankPushTreeUpgrades({
   const rankings = [];
 
   for (const stnId of TREE_RANK_NODES) {
-    const { tree, from, to } = bumpTreeNode(baseTree, stnId);
+    const { tree, from, to } = bumpTreeNodeAscension(baseTree, stnId);
     const bumped = runPush(tree);
     const saved = (baseline.reachable && bumped.reachable)
       ? baseline.totalRealSeconds - bumped.totalRealSeconds
@@ -351,6 +359,22 @@ export function rankPushTreeUpgrades({
       savedSeconds: saved,
     });
   }
+
+  const multTarget = startingMult * (1 + multBonusPercent);
+  const bumpedMult = runPush(baseTree, multTarget);
+  const savedMult = (baseline.reachable && bumpedMult.reachable)
+    ? baseline.totalRealSeconds - bumpedMult.totalRealSeconds
+    : null;
+  rankings.push({
+    stnId: null,
+    fromLabel: null,
+    toLabel: null,
+    label: `Mult +${Math.round(multBonusPercent * 100)}% (${startingMult.toFixed(2)} → ${multTarget.toFixed(2)})`,
+    reachable: bumpedMult.reachable,
+    totalRealSeconds: bumpedMult.totalRealSeconds,
+    bestVariant: bumpedMult.bestVariant,
+    savedSeconds: savedMult,
+  });
 
   rankings.sort((a, b) => {
     const as = a.savedSeconds, bs = b.savedSeconds;

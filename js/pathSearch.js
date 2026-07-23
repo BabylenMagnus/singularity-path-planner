@@ -11,20 +11,20 @@
 // other module (app.js, optimizer.worker.js) can import any planner from
 // "./pathSearch.js" without needing to know how the search code is split.
 
-import { LogNum } from "./bignum.js?v=20260723b";
-import { estimateTimeToNextSingularity, DEFAULT_SINGULARITY_REQUIREMENT } from "./growth.js?v=20260723b";
-import { multAfterSingularize, totalMult } from "./singularize.js?v=20260723b";
+import { LogNum } from "./bignum.js?v=20260723c";
+import { estimateTimeToNextSingularity, DEFAULT_SINGULARITY_REQUIREMENT } from "./growth.js?v=20260723c";
+import { multAfterSingularize, totalMult } from "./singularize.js?v=20260723c";
 import {
   MULT_BUCKET, roundTo, activeBonusKey, grindToGoal,
   searchUpgradePrefix, tryInsertImprovements,
-} from "./searchCore.js?v=20260723b";
+} from "./searchCore.js?v=20260723c";
 
 export {
   E308_PENALTY_NAME, E500_PENALTY_NAME, E1000_PENALTY_NAME,
   replayActionsPartial, grindRepeatCount,
-} from "./searchCore.js?v=20260723b";
-export { findPushPathVariants, expandPushPath, rankPushTreeUpgrades } from "./pushPlanner.js?v=20260723b";
-export { findNodeRushPath, rankRushTreeUpgrades } from "./nodeRush.js?v=20260723b";
+} from "./searchCore.js?v=20260723c";
+export { findPushPathVariants, expandPushPath, rankPushTreeUpgrades } from "./pushPlanner.js?v=20260723c";
+export { findNodeRushPath, rankRushTreeUpgrades } from "./nodeRush.js?v=20260723c";
 
 // grindToGoal memoized by (n1Level, n1Ascension, mult-bucket, unlocked-bonuses)
 // -- improvement B. The outcome depends on STN 1.0's (level, ascension) AND the

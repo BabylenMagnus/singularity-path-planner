@@ -5,12 +5,12 @@
 import {
   findOptimalPath, expandPath, findPushPathVariants, expandPushPath,
   rankPushTreeUpgrades, findNodeRushPath, rankRushTreeUpgrades, E1000_PENALTY_NAME,
-} from "./pathSearch.js?v=20260723b";
-import { weakenedPenaltyExponent } from "./singularize.js?v=20260723b";
+} from "./pathSearch.js?v=20260723c";
+import { weakenedPenaltyExponent } from "./singularize.js?v=20260723c";
 import {
   baseExponent, rn126Exponent, rn127Exponent, rn128Exponent,
   E10_PENALTY_NAME, E50_PENALTY_NAME, E154_PENALTY_NAME,
-} from "./atomPenalties.js?v=20260723b";
+} from "./atomPenalties.js?v=20260723c";
 
 // E308/E500 weakening is recomputed from the live tree state inside the
 // search (3.1/3.2 are purchasable); E1000's comes from STN 6.2 and E10/E50/
